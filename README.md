@@ -1,40 +1,74 @@
-## DEVCON: a Complete Dev Environment in a Container 📦 
 
-**Development Container Blog Post:** [link](https://medium.com/@nicolakabar/the-ultimate-development-environment-moving-from-vagrant-to-docker-for-mac-532bcf07e186)
+# **Swiss Army Container**
 
-As a rule of thumb, I never install any packages directly onto my Mac unless I absolutely have to. So I created this sample development container that I use with Docker for Mac to be my sole dev environment. There is a breakdown in the Dockerfile of which tools are installed. 
+This repository contains Dockerfiles for creating development environment containers, supporting both arm64 and amd64 architectures. These containers are equipped with a wide range of tools and utilities to facilitate development across multiple languages and platforms.
 
+## **Contents**
 
-### Package Versions
+- **`Dockerfile.arm64`**: Dockerfile for building the container image for the arm64 architecture.
+- **`Dockerfile.amd64`**: Dockerfile for building the container image for the amd64 architecture.
+
+## **Features**
+
+- Base System: Ubuntu (Lunar for arm64, Jammy for amd64).
+- Common development tools and utilities (vim, git, curl, wget, etc.).
+- Programming environments for Go, Node.js, and Python.
+- Containerization and orchestration tools (Docker, Docker Compose, Kubernetes tools).
+- HashiCorp tools (Terraform, Vault, Consul, etc.).
+- CLIs for various cloud services (AWS, GCP, Azure).
+- Customized ZSH environment with themes and suggestions.
+
+## **Usage**
+
+To build the Docker images, use the following commands at the root of the repository:
+
+For arm64:
+
 ```
-ENV GOLANG_VERSION 1.20.3
-ENV GOLANG_DOWNLOAD_SHA256 eb186529f13f901e7a2c4438a05c2cd90d74706aaa0a888469b2a4a617b6ee54
-ENV TERRAFORM_VERSION 1.6.6
-ENV VAULT_VERSION 1.15.4
-ENV CONSUL_VERSION 1.16.0
-ENV PACKER_VERSION 1.10.0
-ENV BOUNDARY_VERSION 0.14.3
-ENV WAYPOINT_VERSION 0.11.4
-ENV HCDIAG_VERSION 0.5.1
-ENV HCDIAG_EXT_VERSION 0.5.0
-ENV KUBECTL_VER 1.27.1
-ENV HELM_VERSION 3.12.0
-ENV CALICO_VERSION 3.16.1
-ENV COSIGN_VERSION 1.8.0
-ENV INFRACOST_VERSION 0.10.28
-```
-### Usage
-
-```
-$ docker run -it --rm --hostname devcon -v /var/run/docker.sock:/var/run/docker.sock nicolaka/devcon:latest
+docker build --build-arg TF_VERSION=0.15.6 -t swissarmycontainer:arm64 .
 ```
 
-![img](devcon.png)
+For amd64:
 
-Optionally, you can mount your local Mac dev directory inside the container by adding `-v /path/to/dir:/root`. Typically, I mount a specific dev directory from my Mac that contains my dot files (including  git, ssh config + keys) to make it easier to use across both Mac and within the dev container. This way I can make sure that the dev container is a throw-away, leaving no keys/secrets exposed or written in it. 
+```
+docker build --build-arg TF_VERSION=0.15.6 -t swissarmycontainer:amd64 .
+```
 
-Feel free to use and adjust to fit your own dev tooling!
+## **Running the Container**
 
-Cheers 🍺
- 
+You can use the following generic command to run the container. Adjust the container name and tag as needed:
+
+```
+docker run -it --rm \
+  --hostname swiss \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ${PWD}:/workspace \
+  -v $HOME/.ssh:/root/.ssh \
+  -w /workspace \
+  --name swisscontainer \
+  swissarmycontainer:arm64
+
+```
+
+## **Setting Up an Alias for Easy Container Access**
+
+To simplify the process of starting your container, you can set up an alias. Add the following line to your **`.bashrc`** or **`.zshrc`** file:
+
+```
+alias startswiss='docker run -it --rm \
+  --hostname swiss \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ${PWD}:/workspace \
+  -v $HOME/.ssh:/root/.ssh \
+  -w /workspace \
+  --name swisscontainer \
+  swissarmycontainer:arm64'
+
+```
+
+After adding this line, reload your shell configuration with the command **`source ~/.bashrc`** (or **`source ~/.zshrc`** if you're using Zsh).
+
+Now, you can start your container simply by typing **`startswiss`** in your terminal.
+
+This alias command will start an interactive session of your **`swissarmycontainer`** Docker container with the ARM64 architecture, mapping your current directory and SSH keys into the container for seamless development workflow.
 
